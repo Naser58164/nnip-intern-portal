@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NNIP 2025 - Intern Program Portal</title>
+    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiM0ZmFjZmUiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIGZpbGw9IndoaXRlIiB2aWV3Qm94PSIwIDAgMjQgMjQiPjxwYXRoIGQ9Im0xMiAyIDMuMDkgNi4yNkwyMiA5bC0xLjUxIDYuMzVMMjIgMjJsLTYuNzQtMS4wNkwxMiAyMmwtMy4yNi0xLjA2TDIgMjJsMS41MS02LjY1TDIgOWw2LjkxLS43NEwxMiAyeiIvPjwvc3ZnPgo8L3N2Zz4=" type="image/svg+xml">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .header-banner {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 10px 20px;
+            text-align: center;
+            color: white;
+            font-size: 0.9em;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="20" cy="80" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="80" r="2" fill="rgba(255,255,255,0.1)"/></svg>');
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .header h1 {
+            font-size: 2.8em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .header .year-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .search-section {
+            padding: 50px 40px;
+            text-align: center;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+
+        .search-instructions {
+            color: #6c757d;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 30px;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 18px 24px;
+            font-size: 1.3em;
+            border: 3px solid #e1e5e9;
+            border-radius: 50px;
+            outline: none;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .search-input:focus {
+            border-color: #4facfe;
+            box-shadow: 0 0 25px rgba(79, 172, 254, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .search-input::placeholder {
+            color: #adb5bd;
+            font-weight: 400;
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(79, 172, 254, 0.4);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(79, 172, 254, 0.6);
+        }
+
+        .search-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            color: #6c757d;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e9ecef;
+            border-top: 4px solid #4facfe;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results-section {
+            margin-top: 20px;
+        }
+
+        .intern-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 20px;
+            border-left: 6px solid #4facfe;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        .intern-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f8f9fa;
+        }
+
+        .intern-name {
+            font-size: 2.2em;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .intern-id {
+            color: #6c757d;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        .info-sections {
+            display: grid;
+            gap: 30px;
+        }
+
+        .info-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .section-title {
+            font-size: 1.4em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .info-item {
+            background: white;
+            padding: 18px 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease;
+        }
+
+        .info-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #7f8c8d;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .info-value {
+            font-size: 1.1em;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .evaluation-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .evaluation-item {
+            text-align: center;
+            padding: 25px;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .evaluation-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.1;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="2"/></svg>');
+        }
+
+        .evaluation-item.mid {
+            background: linear-gradient(135deg, #fdbb2d 0%, #22c1c3 100%);
+            color: white;
+        }
+
+        .evaluation-item.final {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #2c3e50;
+        }
+
+        .evaluation-score {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .evaluation-label {
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+
+        .program-details {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 20px;
+        }
+
+        .program-details h3 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .program-details p {
+            margin-bottom: 15px;
+            line-height: 1.7;
+        }
+
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .skill-tag {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .objectives-list {
+            margin-top: 15px;
+        }
+
+        .objectives-list li {
+            margin-bottom: 8px;
+            padding-left: 10px;
+            position: relative;
+        }
+
+        .objectives-list li::before {
+            content: '✓';
+            position: absolute;
+            left: -15px;
+            color: #00f2fe;
+            font-weight: bold;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-upcoming { background: #3498db; color: white; }
+        .status-active { background: #27ae60; color: white; }
+        .status-completed { background: #95a5a6; color: white; }
+
+        .error-message, .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #e74c3c;
+            font-size: 1.2em;
+            background: white;
+            border-radius: 15px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .no-results {
+            color: #7f8c8d;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9em;
+        }
+
+        .api-config {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px;
+            color: white;
+            font-size: 0.9em;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 0 15px; }
+            .header { padding: 30px 20px; }
+            .header h1 { font-size: 2.2em; }
+            .search-section { padding: 40px 20px; }
+            .intern-card { padding: 30px 20px; }
+            .evaluation-grid { grid-template-columns: 1fr; }
+            .info-grid { grid-template-columns: 1fr; }
+            .skills-list { justify-content: center; }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 { font-size: 1.8em; }
+            .intern-name { font-size: 1.8em; }
+            .search-input { font-size: 1.1em; padding: 15px 20px; }
+            .search-btn { padding: 15px 30px; font-size: 1.1em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-banner">
+        🔒 Secure Access Portal - Enter your Civil ID to view your internship details
+    </div>
+
+    <div class="container">
+        <div class="main-card">
+            <div class="header">
+                <div class="header-content">
+                    <h1>🎓 NNIP Intern Portal</h1>
+                    <div class="subtitle">National Nursing Internship Program</div>
+                    <div class="year-badge">2025 COHORT</div>
+                </div>
+            </div>
+
+            <div class="search-section">
+                <div class="search-instructions">
+                    Enter your Civil ID number to access your program details and evaluations
+                </div>
+                <div class="search-box">
+                    <input 
+                        type="text" 
+                        id="civilIdInput" 
+                        class="search-input" 
+                        placeholder="Civil ID (8 digits)"
+                        maxlength="12"
+                        pattern="[0-9]*"
+                        autocomplete="off"
+                    >
+                </div>
+                <button onclick="searchIntern()" class="search-btn" id="searchBtn">
+                    🔍 Access My Profile
+                </button>
+            </div>
+        </div>
+
+        <div class="loading" id="loadingSection">
+            <div class="loading-spinner"></div>
+            <div>Searching for your profile...</div>
+        </div>
+
+        <div class="results-section" id="resultsSection"></div>
+    </div>
+
+    <div class="api-config">
+        <strong>🔧 For IT Administration:</strong> To connect to live Google Sheets data, update the SHEET_ID and API_KEY in the configuration section below, then uncomment the Google Sheets API integration code.
+    </div>
+
+    <div class="footer">
+        <p>© 2025 National Nursing Internship Program | Secure Portal | Mobile Optimized</p>
+    </div>
+
+    <script>
+        // Configuration for Google Sheets API (to be set by administrator)
+        const CONFIG = {
+            SHEET_ID: '1NBucA3Ggl5L3IlUdW0v_3QJDz6WPn6qXGwO0wCmsYl4',
+            API_KEY: 'YOUR_GOOGLE_API_KEY_HERE', // Replace with actual API key
+            SHEET_RANGE_LIST: 'List!A2:K100',
+            SHEET_RANGE_DATASET: 'Dataset!A2:Z100'
+        };
+
+        // Sample data for demonstration (replace with API calls when ready)
+        const sampleData = {
+            internsList: [
+                {
+                    civilId: "29641762",
+                    name: "Ahood Tarish Tuwariesh Ahmed Aljunibi",
+                    gender: "Female",
+                    dateOfBirth: "04/07/2000",
+                    nationality: "Omani",
+                    qualification: "BSN",
+                    phone: "94777781",
+                    address: "Al Duqm / Ras madrakah",
+                    email: "ahoodaljunaibi8@gmail.com",
+                    department: "General Nursing Department",
+                    programId: "NURS001",
+                    startDate: "2025-01-15",
+                    endDate: "2025-07-15",
+                    supervisor: "Dr. Amina Al-Rashdi",
+                    midEvaluation: 87,
+                    finalEvaluation: null
+                },
+                {
+                    civilId: "15412461",
+                    name: "Aisha Salim Nasser Alharrassi",
+                    gender: "Female",
+                    dateOfBirth: "24/01/2000",
+                    nationality: "Omani",
+                    qualification: "BSN",
+                    phone: "94418646",
+                    address: "Firq/Nizwa",
+                    email: "aysn.alh@gmail.com",
+                    department: "Clinical Nursing",
+                    programId: "NURS002",
+                    startDate: "2025-02-01",
+                    endDate: "2025-08-01",
+                    supervisor: "Ms. Fatma Al-Zahra",
+                    midEvaluation: 92,
+                    finalEvaluation: null
+                },
+                {
+                    civilId: "19444507",
+                    name: "Al Thuraiya Khalfan Saed AlAbri",
+                    gender: "Female",
+                    dateOfBirth: "03/05/2001",
+                    nationality: "Omani",
+                    qualification: "BSN",
+                    phone: "92652973",
+                    address: "Al Hamra",
+                    email: "alabrialthuraya495@gmail.com",
+                    department: "Pediatric Nursing",
+                    programId: "NURS003",
+                    startDate: "2025-01-20",
+                    endDate: "2025-07-20",
+                    supervisor: "Dr. Mohammed Al-Kindi",
+                    midEvaluation: 89,
+                    finalEvaluation: null
+                },
+                {
+                    civilId: "18442207",
+                    name: "Aladhraa Mohammed Salim Alabdali",
+                    gender: "Female",
+                    dateOfBirth: "22/07/2001",
+                    nationality: "Omani",
+                    qualification: "BSN",
+                    phone: "97555317",
+                    address: "Manah / harat albilad",
+                    email: "aladhraa.0707@gmail.com",
+                    department: "Emergency Nursing",
+                    programId: "NURS004",
+                    startDate: "2025-02-10",
+                    endDate: "2025-08-10",
+                    supervisor: "Dr. Salim Al-Busaidi",
+                    midEvaluation: 85,
+                    finalEvaluation: null
+                },
+                {
+                    civilId: "15274332",
+                    name: "Almuataz Khalfan Saud Ambusaidi",
+                    gender: "Male",
+                    dateOfBirth: "07/11/2001",
+                    nationality: "Omani",
+                    qualification: "BSN",
+                    phone: "99709219",
+                    address: "Nizwa",
+                    email: "mutazambu@gmail.com",
+                    department: "Mental Health Nursing",
+                    programId: "NURS005",
+                    startDate: "2025-01-25",
+                    endDate: "2025-07-25",
+                    supervisor: "Dr. Layla Al-Hinai",
+                    midEvaluation: 91,
+                    finalEvaluation: null
+                },
+                {
+                    civilId: "14320795",
+                    name: "Athari Zahir Ali Al Ramidhi",
+                    gender: "Female",
+                    dateOfBirth: "09/12/2001",
+                    nationality: "Omani",
+                    qualification: "BSN",
+                    phone: "72222126",
+                    address: "Nizwa-Tanuf",
+                    email: "atharizahir784@gmail.com",
+                    department: "Surgical Nursing",
+                    programId: "NURS006",
+                    startDate: "2025-02-05",
+                    endDate: "2025-08-05",
+                    supervisor: "Dr. Omar Al-Shabibi",
+                    midEvaluation: 88,
+                    finalEvaluation: null
+                }
+            ],
+            programs: [
+                {
+                    programId: "NURS001",
+                    title: "General Nursing Internship Program",
+                    description: "Comprehensive nursing practice in general medical units covering patient care, medication administration, and healthcare team collaboration",
+                    duration: "6 months",
+                    department: "General Nursing Department",
+                    skills: ["Patient Care", "Medication Administration", "Health Assessment", "Documentation", "Team Collaboration"],
+                    objectives: ["Develop clinical nursing skills", "Master patient safety protocols", "Enhance communication with patients and families"]
+                },
+                {
+                    programId: "NURS002",
+                    title: "Clinical Nursing Specialization",
+                    description: "Advanced clinical nursing training focused on specialized patient populations and complex care scenarios",
+                    duration: "6 months",
+                    department: "Clinical Nursing",
+                    skills: ["Advanced Assessment", "Critical Thinking", "Evidence-Based Practice", "Quality Improvement", "Leadership"],
+                    objectives: ["Apply evidence-based nursing practices", "Develop critical thinking in clinical situations", "Lead nursing care initiatives"]
+                },
+                {
+                    programId: "NURS003",
+                    title: "Pediatric Nursing Program",
+                    description: "Specialized training in pediatric nursing care for infants, children, and adolescents in various healthcare settings",
+                    duration: "6 months",
+                    department: "Pediatric Nursing",
+                    skills: ["Pediatric Assessment", "Family-Centered Care", "Growth & Development", "Immunizations", "Child Safety"],
+                    objectives: ["Master pediatric nursing techniques", "Support families in healthcare decisions", "Ensure child safety and comfort"]
+                },
+                {
+                    programId: "NURS004",
+                    title: "Emergency Nursing Training",
+                    description: "Intensive training in emergency nursing care, triage, and crisis management in fast-paced healthcare environments",
+                    duration: "6 months",
+                    department: "Emergency Nursing",
+                    skills: ["Triage Assessment", "Emergency Procedures", "Trauma Care", "Crisis Management", "Rapid Decision Making"],
+                    objectives: ["Respond effectively to medical emergencies", "Perform accurate triage assessments", "Manage high-stress situations"]
+                },
+                {
+                    programId: "NURS005",
+                    title: "Mental Health Nursing Program",
+                    description: "Specialized training in mental health nursing, therapeutic communication, and psychiatric care management",
+                    duration: "6 months",
+                    department: "Mental Health Nursing",
+                    skills: ["Therapeutic Communication", "Mental Health Assessment", "Crisis Intervention", "Psychiatric Medications", "Behavioral Management"],
+                    objectives: ["Provide compassionate mental health care", "Develop therapeutic relationships", "Support patients in recovery"]
+                },
+                {
+                    programId: "NURS006",
+                    title: "Surgical Nursing Internship",
+                    description: "Comprehensive training in perioperative nursing care including pre-operative, intra-operative, and post-operative patient management",
+                    duration: "6 months",
+                    department: "Surgical Nursing",
+                    skills: ["Perioperative Care", "Sterile Technique", "Surgical Instruments", "Post-op Monitoring", "Infection Control"],
+                    objectives: ["Master surgical nursing procedures", "Ensure patient safety in surgical settings", "Provide excellent perioperative care"]
+                }
+            ]
+        };
+
+        // Google Sheets API integration (uncomment and configure when ready)
+        /*
+        async function fetchFromGoogleSheets() {
+            try {
+                const listResponse = await fetch(
+                    `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}/values/${CONFIG.SHEET_RANGE_LIST}?key=${CONFIG.API_KEY}`
+                );
+                const programsResponse = await fetch(
+                    `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}/values/${CONFIG.SHEET_RANGE_DATASET}?key=${CONFIG.API_KEY}`
+                );
+                
+                const listData = await listResponse.json();
+                const programsData = await programsResponse.json();
+                
+                // Process and return the data
+                return {
+                    internsList: processListData(listData.values),
+                    programs: processProgramsData(programsData.values)
+                };
+            } catch (error) {
+                console.error('Error fetching from Google Sheets:', error);
+                return sampleData; // Fallback to sample data
+            }
+        }
+        */
+
+        async function searchIntern() {
+            const civilId = document.getElementById('civilIdInput').value.trim();
+            const resultsSection = document.getElementById('resultsSection');
+            const loadingSection = document.getElementById('loadingSection');
+            const searchBtn = document.getElementById('searchBtn');
+
+            if (!civilId) {
+                showError('⚠️ Please enter your Civil ID');
+                return;
+            }
+
+            if (!/^\d{8,12}$/.test(civilId)) {
+                showError('⚠️ Please enter a valid Civil ID (8-12 digits)');
+                return;
+            }
+
+            // Show loading
+            searchBtn.disabled = true;
+            searchBtn.textContent = '🔄 Searching...';
+            loadingSection.style.display = 'block';
+            resultsSection.innerHTML = '';
+
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            try {
+                // Use sample data (replace with fetchFromGoogleSheets() when ready)
+                const data = sampleData;
+                
+                const intern = data.internsList.find(i => i.civilId === civilId);
+                
+                if (!intern) {
+                    showNoResults();
+                    return;
+                }
+
+                const program = data.programs.find(p => p.programId === intern.programId);
+                displayInternProfile(intern, program);
+
+            } catch (error) {
+                console.error('Search error:', error);
+                showError('❌ An error occurred while searching. Please try again.');
+            } finally {
+                // Hide loading
+                loadingSection.style.display = 'none';
+                searchBtn.disabled = false;
+                searchBtn.textContent = '🔍 Access My Profile';
+            }
+        }
+
+        function displayInternProfile(intern, program) {
+            const resultsSection = document.getElementById('resultsSection');
+            
+            const profileHTML = `
+                <div class="intern-card">
+                    <div class="intern-header">
+                        <div class="intern-name">${intern.name}</div>
+                        <div class="intern-id">Civil ID: ${intern.civilId}</div>
+                    </div>
+                    
+                    <div class="info-sections">
+                        <div class="info-section">
+                            <div class="section-title">👤 Personal Information</div>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <div class="info-label">Date of Birth</div>
+                                    <div class="info-value">${intern.dateOfBirth}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Gender</div>
+                                    <div class="info-value">${intern.gender}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Nationality</div>
+                                    <div class="info-value">${intern.nationality}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Qualification</div>
+                                    <div class="info-value">${intern.qualification}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Phone</div>
+                                    <div class="info-value">${intern.phone}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Email</div>
+                                    <div class="info-value">${intern.email}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Address</div>
+                                    <div class="info-value">${intern.address}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-section">
+                            <div class="section-title">🏥 Internship Details</div>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <div class="info-label">Department</div>
+                                    <div class="info-value">${intern.department}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Supervisor</div>
+                                    <div class="info-value">${intern.supervisor}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Start Date</div>
+                                    <div class="info-value">${formatDate(intern.startDate)}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">End Date</div>
+                                    <div class="info-value">${formatDate(intern.endDate)}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Program Status</div>
+                                    <div class="info-value">${getStatusBadge(intern.startDate, intern.endDate)}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Duration</div>
+                                    <div class="info-value">${program ? program.duration : 'N/A'}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-section">
+                            <div class="section-title">📊 Evaluation Reports</div>
+                            <div class="evaluation-grid">
+                                <div class="evaluation-item mid">
+                                    <div class="evaluation-score">${intern.midEvaluation || 'Pending'}</div>
+                                    <div class="evaluation-label">Mid-term Evaluation</div>
+                                    ${intern.midEvaluation ? '<div style="font-size: 0.9em; margin-top: 5px;">/100 Points</div>' : ''}
+                                </div>
+                                <div class="evaluation-item final">
+                                    <div class="evaluation-score">${intern.finalEvaluation || 'Pending'}</div>
+                                    <div class="evaluation-label">Final Evaluation</div>
+                                    ${intern.finalEvaluation ? '<div style="font-size: 0.9em; margin-top: 5px;">/100 Points</div>' : ''}
+                                </div>
+                            </div>
+                        </div>
+
+                        ${program ? `
+                            <div class="info-section">
+                                <div class="section-title">🎓 Program Information</div>
+                                <div class="program-details">
+                                    <h3>${program.title}</h3>
+                                    <p><strong>Description:</strong> ${program.description}</p>
+                                    
+                                    <p><strong>Key Skills You'll Develop:</strong></p>
+                                    <div class="skills-list">
+                                        ${program.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                                    </div>
+                                    
+                                    <p><strong>Learning Objectives:</strong></p>
+                                    <ul class="objectives-list">
+                                        ${program.objectives.map(obj => `<li>${obj}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+
+            resultsSection.innerHTML = profileHTML;
+        }
+
+        function showError(message) {
+            const resultsSection = document.getElementById('resultsSection');
+            resultsSection.innerHTML = `<div class="error-message">${message}</div>`;
+        }
+
+        function showNoResults() {
+            const resultsSection = document.getElementById('resultsSection');
+            resultsSection.innerHTML = `
+                <div class="no-results">
+                    ❌ No intern found with this Civil ID.<br>
+                    Please check your Civil ID and try again.<br><br>
+                    <small>If you believe this is an error, please contact the program administrator.</small>
+                </div>
+            `;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        }
+
+        function getStatusBadge(startDate, endDate) {
+            const now = new Date();
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            
+            if (now < start) {
+                return '<span class="status-badge status-upcoming">Upcoming</span>';
+            } else if (now >= start && now <= end) {
+                return '<span class="status-badge status-active">Active</span>';
+            } else {
+                return '<span class="status-badge status-completed">Completed</span>';
+            }
+        }
+
+        // Input validation and formatting
+        document.getElementById('civilIdInput').addEventListener('input', function(e) {
+            // Only allow numbers
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        });
+
+        // Enter key functionality
+        document.getElementById('civilIdInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchIntern();
+            }
+        });
+
+        // Auto-focus on input when page loads
+        window.addEventListener('load', function() {
+            document.getElementById('civilIdInput').focus();
+        });
+
+        // Sample data logging for testing
+        console.log('🧪 NNIP 2025 - Sample Civil IDs for testing:');
+        console.log('Ahood Tarish: 29641762');
+        console.log('Aisha Salim: 15412461');
+        console.log('Al Thuraiya: 19444507');
+        console.log('Aladhraa Mohammed: 18442207');
+        console.log('Almuataz Khalfan: 15274332');
+        console.log('Athari Zahir: 14320795');
+    </script>
+</body>
+</html>
+                
