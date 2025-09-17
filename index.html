@@ -484,9 +484,34 @@
         // Configuration for Google Sheets API
         const CONFIG = {
             SHEET_ID: '1NBucA3Ggl5L3IlUdW0v_3QJDz6WPn6qXGwO0wCmsYl4',
-            API_KEY: 'AIzaSyB8K7Y4AwqqnGXdZ3_vFSQN9RNPt1X72hE', 
+            API_KEY: 'YOUR_API_KEY_HERE', // 🔑 REPLACE WITH YOUR ACTUAL API KEY
             SHEET_RANGE_LIST: 'List!A2:K100',
-            SHEET_RANGE_DATASET: 'Dataset!A2:Z100'
+            SHEET_RANGE_DATASET: 'Dataset!A2:Z100' // This will include the "Enhance Program" column
+        };
+
+        // Program mappings based on your requirements
+        const PROGRAM_MAPPINGS = {
+            'MCH': {
+                programId: 'MCH',
+                supervisor: 'Ms. Nadiya',
+                department: 'Maternal & Child Health'
+            },
+            'ED': {
+                programId: 'ED', 
+                supervisor: 'Mr. Al-Hassan',
+                department: 'Emergency Department'
+            },
+            'M&S': {
+                programId: 'M&S',
+                supervisor: 'Ms. Noora & Ms. Azhar',
+                department: 'Medical & Surgical'
+            }
+        };
+
+        // All programs have same dates - 9 months duration
+        const PROGRAM_DATES = {
+            startDate: '2025-09-21', // 21 September 2025
+            endDate: '2026-06-15'     // 15 June 2026
         };
 
         // Function to fetch data from Google Sheets
@@ -506,30 +531,60 @@
                 const listData = await listResponse.json();
                 console.log('✅ List data fetched:', listData.values?.length || 0, 'rows');
 
+                // Fetch dataset data (includes "Enhance Program" assignments)
+                let datasetData = null;
+                try {
+                    const datasetResponse = await fetch(
+                        `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}/values/${CONFIG.SHEET_RANGE_DATASET}?key=${CONFIG.API_KEY}`
+                    );
+                    if (datasetResponse.ok) {
+                        datasetData = await datasetResponse.json();
+                        console.log('✅ Dataset data fetched:', datasetData.values?.length || 0, 'rows');
+                    }
+                } catch (error) {
+                    console.log('⚠️ Dataset sheet not accessible, using default assignments');
+                }
+
                 // Process the data
                 return {
-                    internsList: processListData(listData.values || []),
-                    programs: getDefaultPrograms() // Using default programs for now
+                    internsList: processListData(listData.values || [], datasetData?.values || []),
+                    programs: getProgramData()
                 };
                 
             } catch (error) {
                 console.error('❌ Error fetching from Google Sheets:', error);
                 console.log('🔄 Falling back to sample data...');
-                // Return sample data as fallback
                 return getSampleData();
             }
         }
 
-        // Process intern list data from Google Sheets
-        function processListData(rows) {
+        // Process intern list data from Google Sheets with program assignments
+        function processListData(listRows, datasetRows) {
             const processedInterns = [];
             
-            rows.forEach((row, index) => {
+            // Create a mapping of Civil ID to program assignment from Dataset sheet
+            const programAssignments = {};
+            datasetRows.forEach(row => {
+                if (row && row.length > 2) {
+                    const civilId = String(row[2] || '').trim(); // Assuming Civil ID is in column C
+                    const enhanceProgram = String(row[row.length - 1] || '').trim(); // "Enhance Program" in last column
+                    if (civilId && enhanceProgram) {
+                        programAssignments[civilId] = enhanceProgram;
+                    }
+                }
+            });
+
+            console.log('📋 Program assignments found:', Object.keys(programAssignments).length);
+            
+            listRows.forEach((row, index) => {
                 // Skip empty rows or rows without Civil ID
                 if (!row || row.length < 3 || !row[2]) return;
                 
+                const civilId = String(row[2] || '').trim();
+                const assignedProgram = programAssignments[civilId] || 'MCH'; // Default to MCH if not found
+                
                 const intern = {
-                    civilId: String(row[2] || '').trim(), // Column C - Civil ID
+                    civilId: civilId, // Column C - Civil ID
                     name: String(row[0] || '').trim(), // Column A - Name
                     gender: String(row[1] || '').trim(), // Column B - Gender
                     dateOfBirth: String(row[3] || '').trim(), // Column D - Date of Birth
@@ -540,14 +595,18 @@
                     address: String(row[8] || '').trim(), // Column I - Address
                     email: String(row[9] || '').trim(), // Column J - Email
                     
-                    // Assign program details
-                    department: assignDepartment(index),
-                    programId: assignProgramId(index),
-                    supervisor: assignSupervisor(index),
-                    startDate: generateStartDate(index),
-                    endDate: generateEndDate(index),
+                    // Program assignment from Dataset sheet or default
+                    programId: assignedProgram,
+                    department: PROGRAM_MAPPINGS[assignedProgram]?.department || 'Maternal & Child Health',
+                    supervisor: PROGRAM_MAPPINGS[assignedProgram]?.supervisor || 'Ms. Nadiya',
+                    
+                    // Fixed dates for all programs
+                    startDate: PROGRAM_DATES.startDate,
+                    endDate: PROGRAM_DATES.endDate,
+                    
+                    // Generate evaluation scores
                     midEvaluation: generateMidEvaluation(),
-                    finalEvaluation: Math.random() > 0.7 ? generateFinalEvaluation() : null
+                    finalEvaluation: Math.random() > 0.8 ? generateFinalEvaluation() : null // 20% have final scores
                 };
                 
                 // Only add if civil ID exists and is numeric
@@ -560,38 +619,7 @@
             return processedInterns;
         }
 
-        // Helper functions
-        function assignDepartment(index) {
-            const departments = [
-                'General Nursing Department', 'Clinical Nursing', 'Pediatric Nursing',
-                'Emergency Nursing', 'Mental Health Nursing', 'Surgical Nursing'
-            ];
-            return departments[index % departments.length];
-        }
-
-        function assignProgramId(index) {
-            const programIds = ['NURS001', 'NURS002', 'NURS003', 'NURS004', 'NURS005', 'NURS006'];
-            return programIds[index % programIds.length];
-        }
-
-        function assignSupervisor(index) {
-            const supervisors = [
-                'Dr. Amina Al-Rashdi', 'Ms. Fatma Al-Zahra', 'Dr. Mohammed Al-Kindi',
-                'Dr. Salim Al-Busaidi', 'Dr. Layla Al-Hinai', 'Dr. Omar Al-Shabibi'
-            ];
-            return supervisors[index % supervisors.length];
-        }
-
-        function generateStartDate(index) {
-            const startDates = ['2025-01-15', '2025-02-01', '2025-01-20', '2025-02-10', '2025-01-25', '2025-02-05'];
-            return startDates[index % startDates.length];
-        }
-
-        function generateEndDate(index) {
-            const endDates = ['2025-07-15', '2025-08-01', '2025-07-20', '2025-08-10', '2025-07-25', '2025-08-05'];
-            return endDates[index % endDates.length];
-        }
-
+        // Generate evaluation scores
         function generateMidEvaluation() {
             return Math.floor(Math.random() * 20) + 80; // 80-99
         }
@@ -600,67 +628,85 @@
             return Math.floor(Math.random() * 15) + 85; // 85-99
         }
 
-        // Default program data
-        function getDefaultPrograms() {
+        // Updated program data for MCH, ED, and M&S
+        function getProgramData() {
             return [
                 {
-                    programId: "NURS001",
-                    title: "General Nursing Internship Program",
-                    description: "Comprehensive nursing practice in general medical units covering patient care, medication administration, and healthcare team collaboration",
-                    duration: "6 months",
-                    department: "General Nursing Department",
-                    skills: ["Patient Care", "Medication Administration", "Health Assessment", "Documentation", "Team Collaboration"],
-                    objectives: ["Develop clinical nursing skills", "Master patient safety protocols", "Enhance communication with patients and families"]
+                    programId: "MCH",
+                    title: "Maternal & Child Health Nursing Program",
+                    description: "Specialized training in maternal and child health nursing, focusing on prenatal care, labor and delivery, postpartum care, and pediatric nursing across various healthcare settings.",
+                    duration: "9 months",
+                    department: "Maternal & Child Health",
+                    skills: [
+                        "Prenatal Care & Assessment",
+                        "Labor & Delivery Support", 
+                        "Postpartum Care",
+                        "Newborn Care & Assessment",
+                        "Pediatric Nursing",
+                        "Family-Centered Care",
+                        "Breastfeeding Support",
+                        "High-Risk Pregnancy Management"
+                    ],
+                    objectives: [
+                        "Master maternal and newborn care techniques",
+                        "Develop expertise in family-centered care approaches", 
+                        "Provide comprehensive care during pregnancy, birth, and postpartum",
+                        "Support healthy child development and growth",
+                        "Manage high-risk maternal and pediatric cases"
+                    ]
                 },
                 {
-                    programId: "NURS002",
-                    title: "Clinical Nursing Specialization",
-                    description: "Advanced clinical nursing training focused on specialized patient populations and complex care scenarios",
-                    duration: "6 months",
-                    department: "Clinical Nursing",
-                    skills: ["Advanced Assessment", "Critical Thinking", "Evidence-Based Practice", "Quality Improvement", "Leadership"],
-                    objectives: ["Apply evidence-based nursing practices", "Develop critical thinking in clinical situations", "Lead nursing care initiatives"]
+                    programId: "ED",
+                    title: "Emergency Department Nursing Program", 
+                    description: "Intensive training in emergency nursing care, critical assessment, triage, trauma management, and rapid intervention in high-acuity healthcare environments.",
+                    duration: "9 months",
+                    department: "Emergency Department",
+                    skills: [
+                        "Emergency Triage & Assessment",
+                        "Trauma Care & Stabilization",
+                        "Critical Care Procedures", 
+                        "Rapid Decision Making",
+                        "Crisis Management",
+                        "Advanced Life Support",
+                        "Emergency Pharmacology",
+                        "Disaster Preparedness"
+                    ],
+                    objectives: [
+                        "Respond effectively to medical emergencies and trauma",
+                        "Perform accurate and rapid triage assessments",
+                        "Master critical care interventions and procedures",
+                        "Manage multiple patients in high-stress situations",
+                        "Collaborate effectively with emergency response teams"
+                    ]
                 },
                 {
-                    programId: "NURS003",
-                    title: "Pediatric Nursing Program",
-                    description: "Specialized training in pediatric nursing care for infants, children, and adolescents in various healthcare settings",
-                    duration: "6 months",
-                    department: "Pediatric Nursing",
-                    skills: ["Pediatric Assessment", "Family-Centered Care", "Growth & Development", "Immunizations", "Child Safety"],
-                    objectives: ["Master pediatric nursing techniques", "Support families in healthcare decisions", "Ensure child safety and comfort"]
-                },
-                {
-                    programId: "NURS004",
-                    title: "Emergency Nursing Training",
-                    description: "Intensive training in emergency nursing care, triage, and crisis management in fast-paced healthcare environments",
-                    duration: "6 months",
-                    department: "Emergency Nursing",
-                    skills: ["Triage Assessment", "Emergency Procedures", "Trauma Care", "Crisis Management", "Rapid Decision Making"],
-                    objectives: ["Respond effectively to medical emergencies", "Perform accurate triage assessments", "Manage high-stress situations"]
-                },
-                {
-                    programId: "NURS005",
-                    title: "Mental Health Nursing Program",
-                    description: "Specialized training in mental health nursing, therapeutic communication, and psychiatric care management",
-                    duration: "6 months",
-                    department: "Mental Health Nursing",
-                    skills: ["Therapeutic Communication", "Mental Health Assessment", "Crisis Intervention", "Psychiatric Medications", "Behavioral Management"],
-                    objectives: ["Provide compassionate mental health care", "Develop therapeutic relationships", "Support patients in recovery"]
-                },
-                {
-                    programId: "NURS006",
-                    title: "Surgical Nursing Internship",
-                    description: "Comprehensive training in perioperative nursing care including pre-operative, intra-operative, and post-operative patient management",
-                    duration: "6 months",
-                    department: "Surgical Nursing",
-                    skills: ["Perioperative Care", "Sterile Technique", "Surgical Instruments", "Post-op Monitoring", "Infection Control"],
-                    objectives: ["Master surgical nursing procedures", "Ensure patient safety in surgical settings", "Provide excellent perioperative care"]
+                    programId: "M&S",
+                    title: "Medical & Surgical Nursing Program",
+                    description: "Comprehensive training in medical and surgical nursing care, including perioperative care, chronic disease management, and advanced clinical nursing practice.",
+                    duration: "9 months", 
+                    department: "Medical & Surgical",
+                    skills: [
+                        "Medical-Surgical Assessment",
+                        "Perioperative Care",
+                        "Chronic Disease Management",
+                        "Wound Care & Management",
+                        "Pain Assessment & Management",
+                        "Medication Administration",
+                        "Patient Education",
+                        "Discharge Planning"
+                    ],
+                    objectives: [
+                        "Provide comprehensive medical-surgical nursing care",
+                        "Master perioperative nursing procedures and protocols",
+                        "Develop expertise in chronic disease management",
+                        "Ensure patient safety in medical-surgical settings",
+                        "Educate patients and families about health management"
+                    ]
                 }
             ];
         }
 
-        // Fallback sample data
+        // Fallback sample data with correct program assignments
         function getSampleData() {
             return {
                 internsList: [
@@ -674,16 +720,16 @@
                         phone: "94777781",
                         address: "Al Duqm / Ras madrakah",
                         email: "ahoodaljunaibi8@gmail.com",
-                        department: "General Nursing Department",
-                        programId: "NURS001",
-                        startDate: "2025-01-15",
-                        endDate: "2025-07-15",
-                        supervisor: "Dr. Amina Al-Rashdi",
+                        department: "Maternal & Child Health",
+                        programId: "MCH",
+                        supervisor: "Ms. Nadiya",
+                        startDate: "2025-09-21",
+                        endDate: "2026-06-15",
                         midEvaluation: 87,
                         finalEvaluation: null
                     },
                     {
-                        civilId: "15412461",
+                        civilId: "15412461", 
                         name: "Aisha Salim Nasser Alharrassi",
                         gender: "Female",
                         dateOfBirth: "24/01/2000",
@@ -692,17 +738,34 @@
                         phone: "94418646",
                         address: "Firq/Nizwa",
                         email: "aysn.alh@gmail.com",
-                        department: "Clinical Nursing",
-                        programId: "NURS002",
-                        startDate: "2025-02-01",
-                        endDate: "2025-08-01",
-                        supervisor: "Ms. Fatma Al-Zahra",
+                        department: "Emergency Department",
+                        programId: "ED",
+                        supervisor: "Mr. Al-Hassan",
+                        startDate: "2025-09-21",
+                        endDate: "2026-06-15",
                         midEvaluation: 92,
                         finalEvaluation: null
+                    },
+                    {
+                        civilId: "19444507",
+                        name: "Al Thuraiya Khalfan Saed AlAbri", 
+                        gender: "Female",
+                        dateOfBirth: "03/05/2001",
+                        nationality: "Omani",
+                        qualification: "BSN",
+                        phone: "92652973",
+                        address: "Al Hamra",
+                        email: "alabrialthuraya495@gmail.com",
+                        department: "Medical & Surgical",
+                        programId: "M&S",
+                        supervisor: "Ms. Noora & Ms. Azhar",
+                        startDate: "2025-09-21",
+                        endDate: "2026-06-15",
+                        midEvaluation: 89,
+                        finalEvaluation: 94
                     }
-                    // Add more sample data as needed
                 ],
-                programs: getDefaultPrograms()
+                programs: getProgramData()
             };
         }
 
@@ -800,22 +863,22 @@
                         </div>
 
                         <div class="info-section">
-                            <div class="section-title">🏥 Internship Details</div>
+                            <div class="section-title">🏥 NNIP 2025 Program Details</div>
                             <div class="info-grid">
                                 <div class="info-item">
-                                    <div class="info-label">Department</div>
-                                    <div class="info-value">${intern.department}</div>
+                                    <div class="info-label">Assigned Program</div>
+                                    <div class="info-value"><strong>${intern.programId}</strong> - ${intern.department}</div>
                                 </div>
                                 <div class="info-item">
-                                    <div class="info-label">Supervisor</div>
+                                    <div class="info-label">Clinical Supervisor</div>
                                     <div class="info-value">${intern.supervisor}</div>
                                 </div>
                                 <div class="info-item">
-                                    <div class="info-label">Start Date</div>
+                                    <div class="info-label">Program Start Date</div>
                                     <div class="info-value">${formatDate(intern.startDate)}</div>
                                 </div>
                                 <div class="info-item">
-                                    <div class="info-label">End Date</div>
+                                    <div class="info-label">Program End Date</div>
                                     <div class="info-value">${formatDate(intern.endDate)}</div>
                                 </div>
                                 <div class="info-item">
@@ -824,7 +887,7 @@
                                 </div>
                                 <div class="info-item">
                                     <div class="info-label">Duration</div>
-                                    <div class="info-value">${program ? program.duration : 'N/A'}</div>
+                                    <div class="info-value">9 months (Full-time)</div>
                                 </div>
                             </div>
                         </div>
@@ -847,12 +910,12 @@
 
                         ${program ? `
                             <div class="info-section">
-                                <div class="section-title">🎓 Program Information</div>
+                                <div class="section-title">🎓 ${program.programId} Program Information</div>
                                 <div class="program-details">
                                     <h3>${program.title}</h3>
                                     <p><strong>Description:</strong> ${program.description}</p>
                                     
-                                    <p><strong>Key Skills You'll Develop:</strong></p>
+                                    <p><strong>Key Clinical Skills You'll Develop:</strong></p>
                                     <div class="skills-list">
                                         ${program.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
                                     </div>
@@ -882,7 +945,7 @@
                 <div class="no-results">
                     ❌ No intern found with this Civil ID.<br>
                     Please check your Civil ID and try again.<br><br>
-                    <small>If you believe this is an error, please contact the program administrator.</small>
+                    <small>If you believe this is an error, please contact the NNIP program administrator.</small>
                 </div>
             `;
         }
@@ -902,11 +965,11 @@
             const end = new Date(endDate);
             
             if (now < start) {
-                return '<span class="status-badge status-upcoming">Upcoming</span>';
+                return '<span class="status-badge status-upcoming">Starting September 2025</span>';
             } else if (now >= start && now <= end) {
-                return '<span class="status-badge status-active">Active</span>';
+                return '<span class="status-badge status-active">Program Active</span>';
             } else {
-                return '<span class="status-badge status-completed">Completed</span>';
+                return '<span class="status-badge status-completed">Program Completed</span>';
             }
         }
 
@@ -929,8 +992,9 @@
 
         // Console logging for testing
         console.log('🧪 NNIP 2025 - Ready to fetch live data from Google Sheets!');
-        console.log('📋 Sample Civil IDs from your spreadsheet:');
-        console.log('29641762, 15412461, 19444507, 18442207, 15274332, 14320795');
+        console.log('📋 Program assignments: MCH (Ms. Nadiya), ED (Mr. Al-Hassan), M&S (Ms. Noora & Ms. Azhar)');
+        console.log('📅 All programs: Sep 21, 2025 - Jun 15, 2026 (9 months)');
+        console.log('🔍 Sample Civil IDs: 29641762, 15412461, 19444507');
     </script>
 </body>
 </html>
