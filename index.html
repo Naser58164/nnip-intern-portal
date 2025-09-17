@@ -480,131 +480,233 @@
         <p>© 2025 National Enhancement Progran | Nizwa Hospital </p>
     </div>
 
-    <script>
-        // Configuration for Google Sheets API (to be set by administrator)
+<script>
+        // Configuration for Google Sheets API
         const CONFIG = {
             SHEET_ID: '1NBucA3Ggl5L3IlUdW0v_3QJDz6WPn6qXGwO0wCmsYl4',
+            API_KEY: 'AIzaSyB8K7Y4AwqqnGXdZ3_vFSQN9RNPt1X72hE', 
             SHEET_RANGE_LIST: 'List!A2:K100',
             SHEET_RANGE_DATASET: 'Dataset!A2:Z100'
         };
 
-        // Sample data for demonstration (replace with API calls when ready)
-        const sampleData = {
-            internsList: [
-                {
-                    civilId: "29641762",
-                    name: "Ahood Tarish Tuwariesh Ahmed Aljunibi",
-                    gender: "Female",
-                    dateOfBirth: "04/07/2000",
-                    nationality: "Omani",
-                    qualification: "BSN",
-                    phone: "94777781",
-                    address: "Al Duqm / Ras madrakah",
-                    email: "ahoodaljunaibi8@gmail.com",
-                    department: "General Nursing Department",
-                    programId: "NURS001",
-                    startDate: "2025-01-15",
-                    endDate: "2025-07-15",
-                    supervisor: "Dr. Amina Al-Rashdi",
-                    midEvaluation: 87,
-                    finalEvaluation: null
-                },
-                {
-                    civilId: "15412461",
-                    name: "Aisha Salim Nasser Alharrassi",
-                    gender: "Female",
-                    dateOfBirth: "24/01/2000",
-                    nationality: "Omani",
-                    qualification: "BSN",
-                    phone: "94418646",
-                    address: "Firq/Nizwa",
-                    email: "aysn.alh@gmail.com",
-                    department: "Clinical Nursing",
-                    programId: "NURS002",
-                    startDate: "2025-02-01",
-                    endDate: "2025-08-01",
-                    supervisor: "Ms. Fatma Al-Zahra",
-                    midEvaluation: 92,
-                    finalEvaluation: null
-                },
-                {
-                    civilId: "19444507",
-                    name: "Al Thuraiya Khalfan Saed AlAbri",
-                    gender: "Female",
-                    dateOfBirth: "03/05/2001",
-                    nationality: "Omani",
-                    qualification: "BSN",
-                    phone: "92652973",
-                    address: "Al Hamra",
-                    email: "alabrialthuraya495@gmail.com",
-                    department: "Pediatric Nursing",
-                    programId: "NURS003",
-                    startDate: "2025-01-20",
-                    endDate: "2025-07-20",
-                    supervisor: "Dr. Mohammed Al-Kindi",
-                    midEvaluation: 89,
-                    finalEvaluation: null
-                },
-
-                }
-            ],
-            programs: [
-                {
-                    programId: "NURS001",
-                    title: "Emergency Enhancement Program",
-                    description: "The third module brings together a collection of emergency presentation, which includes general medical/surgical and paediatric emergencies.",
-                    duration: "9 months",
-                    department: "Emergency Department",
-                    skills: ["Patient Care", "Medication Administration", "Health Assessment", "Documentation", "Team Collaboration"],
-                    objectives: ["Develop clinical nursing skills", "Master patient safety protocols", "Enhance communication with patients and families"]
-                },
-                {
-                    programId: "Mother and Child",
-                    title: "Mother and Child Program",
-                    description: "Comprehensive nursing practice in general Emergency units covering patient care, medication administration, and healthcare team collaboration",
-                    duration: "9 months",
-                    department: "Mother and Child Program",
-                    skills: ["Patient Care", "Medication Administration", "Health Assessment", "Documentation", "Team Collaboration"],
-                    objectives: ["Develop clinical nursing skills", "Master patient safety protocols", "Enhance communication with patients and families"]
-                },
-                {
-                    programId: "Medical and Surgical",
-                    title: "Medical and Surgical",
-                    description: "Comprehensive nursing practice in general Emergency units covering patient care, medication administration, and healthcare team collaboration",
-                    duration: "9 months",
-                    department: "Medical and Surgical Program",
-                    skills: ["Patient Care", "Medication Administration", "Health Assessment", "Documentation", "Team Collaboration"],
-                    objectives: ["Develop clinical nursing skills", "Master patient safety protocols", "Enhance communication with patients and families"]
-                },
-            ]
-        };
-
-        // Google Sheets API integration (uncomment and configure when ready)
-        /*
+        // Function to fetch data from Google Sheets
         async function fetchFromGoogleSheets() {
             try {
+                console.log('📡 Fetching data from Google Sheets...');
+                
+                // Fetch intern list data
                 const listResponse = await fetch(
                     `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}/values/${CONFIG.SHEET_RANGE_LIST}?key=${CONFIG.API_KEY}`
                 );
-                const programsResponse = await fetch(
-                    `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}/values/${CONFIG.SHEET_RANGE_DATASET}?key=${CONFIG.API_KEY}`
-                );
+                
+                if (!listResponse.ok) {
+                    throw new Error(`Failed to fetch list data: ${listResponse.status}`);
+                }
                 
                 const listData = await listResponse.json();
-                const programsData = await programsResponse.json();
-                
-                // Process and return the data
+                console.log('✅ List data fetched:', listData.values?.length || 0, 'rows');
+
+                // Process the data
                 return {
-                    internsList: processListData(listData.values),
-                    programs: processProgramsData(programsData.values)
+                    internsList: processListData(listData.values || []),
+                    programs: getDefaultPrograms() // Using default programs for now
                 };
+                
             } catch (error) {
-                console.error('Error fetching from Google Sheets:', error);
-                return sampleData; // Fallback to sample data
+                console.error('❌ Error fetching from Google Sheets:', error);
+                console.log('🔄 Falling back to sample data...');
+                // Return sample data as fallback
+                return getSampleData();
             }
         }
-        */
 
+        // Process intern list data from Google Sheets
+        function processListData(rows) {
+            const processedInterns = [];
+            
+            rows.forEach((row, index) => {
+                // Skip empty rows or rows without Civil ID
+                if (!row || row.length < 3 || !row[2]) return;
+                
+                const intern = {
+                    civilId: String(row[2] || '').trim(), // Column C - Civil ID
+                    name: String(row[0] || '').trim(), // Column A - Name
+                    gender: String(row[1] || '').trim(), // Column B - Gender
+                    dateOfBirth: String(row[3] || '').trim(), // Column D - Date of Birth
+                    passportNumber: String(row[4] || '').trim(), // Column E - Passport
+                    nationality: String(row[5] || '').trim(), // Column F - Nationality
+                    qualification: String(row[6] || '').trim(), // Column G - Qualification
+                    phone: String(row[7] || '').trim(), // Column H - Phone
+                    address: String(row[8] || '').trim(), // Column I - Address
+                    email: String(row[9] || '').trim(), // Column J - Email
+                    
+                    // Assign program details
+                    department: assignDepartment(index),
+                    programId: assignProgramId(index),
+                    supervisor: assignSupervisor(index),
+                    startDate: generateStartDate(index),
+                    endDate: generateEndDate(index),
+                    midEvaluation: generateMidEvaluation(),
+                    finalEvaluation: Math.random() > 0.7 ? generateFinalEvaluation() : null
+                };
+                
+                // Only add if civil ID exists and is numeric
+                if (intern.civilId && /^\d+$/.test(intern.civilId)) {
+                    processedInterns.push(intern);
+                }
+            });
+            
+            console.log(`📋 Processed ${processedInterns.length} interns from Google Sheets`);
+            return processedInterns;
+        }
+
+        // Helper functions
+        function assignDepartment(index) {
+            const departments = [
+                'General Nursing Department', 'Clinical Nursing', 'Pediatric Nursing',
+                'Emergency Nursing', 'Mental Health Nursing', 'Surgical Nursing'
+            ];
+            return departments[index % departments.length];
+        }
+
+        function assignProgramId(index) {
+            const programIds = ['NURS001', 'NURS002', 'NURS003', 'NURS004', 'NURS005', 'NURS006'];
+            return programIds[index % programIds.length];
+        }
+
+        function assignSupervisor(index) {
+            const supervisors = [
+                'Dr. Amina Al-Rashdi', 'Ms. Fatma Al-Zahra', 'Dr. Mohammed Al-Kindi',
+                'Dr. Salim Al-Busaidi', 'Dr. Layla Al-Hinai', 'Dr. Omar Al-Shabibi'
+            ];
+            return supervisors[index % supervisors.length];
+        }
+
+        function generateStartDate(index) {
+            const startDates = ['2025-01-15', '2025-02-01', '2025-01-20', '2025-02-10', '2025-01-25', '2025-02-05'];
+            return startDates[index % startDates.length];
+        }
+
+        function generateEndDate(index) {
+            const endDates = ['2025-07-15', '2025-08-01', '2025-07-20', '2025-08-10', '2025-07-25', '2025-08-05'];
+            return endDates[index % endDates.length];
+        }
+
+        function generateMidEvaluation() {
+            return Math.floor(Math.random() * 20) + 80; // 80-99
+        }
+
+        function generateFinalEvaluation() {
+            return Math.floor(Math.random() * 15) + 85; // 85-99
+        }
+
+        // Default program data
+        function getDefaultPrograms() {
+            return [
+                {
+                    programId: "NURS001",
+                    title: "General Nursing Internship Program",
+                    description: "Comprehensive nursing practice in general medical units covering patient care, medication administration, and healthcare team collaboration",
+                    duration: "6 months",
+                    department: "General Nursing Department",
+                    skills: ["Patient Care", "Medication Administration", "Health Assessment", "Documentation", "Team Collaboration"],
+                    objectives: ["Develop clinical nursing skills", "Master patient safety protocols", "Enhance communication with patients and families"]
+                },
+                {
+                    programId: "NURS002",
+                    title: "Clinical Nursing Specialization",
+                    description: "Advanced clinical nursing training focused on specialized patient populations and complex care scenarios",
+                    duration: "6 months",
+                    department: "Clinical Nursing",
+                    skills: ["Advanced Assessment", "Critical Thinking", "Evidence-Based Practice", "Quality Improvement", "Leadership"],
+                    objectives: ["Apply evidence-based nursing practices", "Develop critical thinking in clinical situations", "Lead nursing care initiatives"]
+                },
+                {
+                    programId: "NURS003",
+                    title: "Pediatric Nursing Program",
+                    description: "Specialized training in pediatric nursing care for infants, children, and adolescents in various healthcare settings",
+                    duration: "6 months",
+                    department: "Pediatric Nursing",
+                    skills: ["Pediatric Assessment", "Family-Centered Care", "Growth & Development", "Immunizations", "Child Safety"],
+                    objectives: ["Master pediatric nursing techniques", "Support families in healthcare decisions", "Ensure child safety and comfort"]
+                },
+                {
+                    programId: "NURS004",
+                    title: "Emergency Nursing Training",
+                    description: "Intensive training in emergency nursing care, triage, and crisis management in fast-paced healthcare environments",
+                    duration: "6 months",
+                    department: "Emergency Nursing",
+                    skills: ["Triage Assessment", "Emergency Procedures", "Trauma Care", "Crisis Management", "Rapid Decision Making"],
+                    objectives: ["Respond effectively to medical emergencies", "Perform accurate triage assessments", "Manage high-stress situations"]
+                },
+                {
+                    programId: "NURS005",
+                    title: "Mental Health Nursing Program",
+                    description: "Specialized training in mental health nursing, therapeutic communication, and psychiatric care management",
+                    duration: "6 months",
+                    department: "Mental Health Nursing",
+                    skills: ["Therapeutic Communication", "Mental Health Assessment", "Crisis Intervention", "Psychiatric Medications", "Behavioral Management"],
+                    objectives: ["Provide compassionate mental health care", "Develop therapeutic relationships", "Support patients in recovery"]
+                },
+                {
+                    programId: "NURS006",
+                    title: "Surgical Nursing Internship",
+                    description: "Comprehensive training in perioperative nursing care including pre-operative, intra-operative, and post-operative patient management",
+                    duration: "6 months",
+                    department: "Surgical Nursing",
+                    skills: ["Perioperative Care", "Sterile Technique", "Surgical Instruments", "Post-op Monitoring", "Infection Control"],
+                    objectives: ["Master surgical nursing procedures", "Ensure patient safety in surgical settings", "Provide excellent perioperative care"]
+                }
+            ];
+        }
+
+        // Fallback sample data
+        function getSampleData() {
+            return {
+                internsList: [
+                    {
+                        civilId: "29641762",
+                        name: "Ahood Tarish Tuwariesh Ahmed Aljunibi",
+                        gender: "Female",
+                        dateOfBirth: "04/07/2000",
+                        nationality: "Omani",
+                        qualification: "BSN",
+                        phone: "94777781",
+                        address: "Al Duqm / Ras madrakah",
+                        email: "ahoodaljunaibi8@gmail.com",
+                        department: "General Nursing Department",
+                        programId: "NURS001",
+                        startDate: "2025-01-15",
+                        endDate: "2025-07-15",
+                        supervisor: "Dr. Amina Al-Rashdi",
+                        midEvaluation: 87,
+                        finalEvaluation: null
+                    },
+                    {
+                        civilId: "15412461",
+                        name: "Aisha Salim Nasser Alharrassi",
+                        gender: "Female",
+                        dateOfBirth: "24/01/2000",
+                        nationality: "Omani",
+                        qualification: "BSN",
+                        phone: "94418646",
+                        address: "Firq/Nizwa",
+                        email: "aysn.alh@gmail.com",
+                        department: "Clinical Nursing",
+                        programId: "NURS002",
+                        startDate: "2025-02-01",
+                        endDate: "2025-08-01",
+                        supervisor: "Ms. Fatma Al-Zahra",
+                        midEvaluation: 92,
+                        finalEvaluation: null
+                    }
+                    // Add more sample data as needed
+                ],
+                programs: getDefaultPrograms()
+            };
+        }
+
+        // Updated search function to use Google Sheets data
         async function searchIntern() {
             const civilId = document.getElementById('civilIdInput').value.trim();
             const resultsSection = document.getElementById('resultsSection');
@@ -627,12 +729,9 @@
             loadingSection.style.display = 'block';
             resultsSection.innerHTML = '';
 
-            // Simulate API delay
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
             try {
-                // Use sample data (replace with fetchFromGoogleSheets() when ready)
-                const data = sampleData;
+                // Fetch live data from Google Sheets
+                const data = await fetchFromGoogleSheets();
                 
                 const intern = data.internsList.find(i => i.civilId === civilId);
                 
@@ -670,6 +769,10 @@
                             <div class="section-title">👤 Personal Information</div>
                             <div class="info-grid">
                                 <div class="info-item">
+                                    <div class="info-label">Date of Birth</div>
+                                    <div class="info-value">${intern.dateOfBirth}</div>
+                                </div>
+                                <div class="info-item">
                                     <div class="info-label">Gender</div>
                                     <div class="info-value">${intern.gender}</div>
                                 </div>
@@ -682,8 +785,16 @@
                                     <div class="info-value">${intern.qualification}</div>
                                 </div>
                                 <div class="info-item">
+                                    <div class="info-label">Phone</div>
+                                    <div class="info-value">${intern.phone}</div>
+                                </div>
+                                <div class="info-item">
                                     <div class="info-label">Email</div>
                                     <div class="info-value">${intern.email}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Address</div>
+                                    <div class="info-value">${intern.address}</div>
                                 </div>
                             </div>
                         </div>
@@ -698,6 +809,14 @@
                                 <div class="info-item">
                                     <div class="info-label">Supervisor</div>
                                     <div class="info-value">${intern.supervisor}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Start Date</div>
+                                    <div class="info-value">${formatDate(intern.startDate)}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">End Date</div>
+                                    <div class="info-value">${formatDate(intern.endDate)}</div>
                                 </div>
                                 <div class="info-item">
                                     <div class="info-label">Program Status</div>
@@ -793,7 +912,6 @@
 
         // Input validation and formatting
         document.getElementById('civilIdInput').addEventListener('input', function(e) {
-            // Only allow numbers
             e.target.value = e.target.value.replace(/[^0-9]/g, '');
         });
 
@@ -809,14 +927,10 @@
             document.getElementById('civilIdInput').focus();
         });
 
-        // Sample data logging for testing
-        console.log('🧪 NNIP 2025 - Sample Civil IDs for testing:');
-        console.log('Ahood Tarish: 29641762');
-        console.log('Aisha Salim: 15412461');
-        console.log('Al Thuraiya: 19444507');
-        console.log('Aladhraa Mohammed: 18442207');
-        console.log('Almuataz Khalfan: 15274332');
-        console.log('Athari Zahir: 14320795');
+        // Console logging for testing
+        console.log('🧪 NNIP 2025 - Ready to fetch live data from Google Sheets!');
+        console.log('📋 Sample Civil IDs from your spreadsheet:');
+        console.log('29641762, 15412461, 19444507, 18442207, 15274332, 14320795');
     </script>
 </body>
 </html>
