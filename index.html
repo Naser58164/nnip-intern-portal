@@ -483,13 +483,13 @@
     </div>
 
 
-       <script>
+<script>
         // Configuration for Google Sheets API
         const CONFIG = {
             SHEET_ID: '1NBucA3Ggl5L3IlUdW0v_3QJDz6WPn6qXGwO0wCmsYl4',
-            API_KEY: 'AIzaSyB8K7Y4AwqqnGXdZ3_vFSQN9RNPt1X72hE', // 🔑 REPLACE WITH YOUR ACTUAL API KEY
+            API_KEY: 'AIzaSyB8K7Y4AwqqnGXdZ3_vFSQN9RNPt1X72hE', 
             SHEET_RANGE_LIST: 'List!A2:K100',
-            SHEET_RANGE_DATASET: 'Dataset!A2:Q100' // Include up to column Q for programID
+            SHEET_RANGE_DATASET: 'Dataset!A2:Z100' // Extended range to capture all columns
         };
 
         // Program mappings based on your requirements
@@ -534,7 +534,7 @@
                 const listData = await listResponse.json();
                 console.log('✅ List data fetched:', listData.values?.length || 0, 'rows');
 
-                // Fetch dataset data (includes programID in column Q)
+                // Fetch dataset data with debugging
                 let datasetData = null;
                 try {
                     const datasetResponse = await fetch(
@@ -543,9 +543,23 @@
                     if (datasetResponse.ok) {
                         datasetData = await datasetResponse.json();
                         console.log('✅ Dataset data fetched:', datasetData.values?.length || 0, 'rows');
+                        
+                        // Debug: Show first few rows of dataset
+                        if (datasetData.values && datasetData.values.length > 0) {
+                            console.log('🔍 First dataset row structure:');
+                            console.log('Row 0 (headers?):', datasetData.values[0]);
+                            if (datasetData.values.length > 1) {
+                                console.log('Row 1 (first data):', datasetData.values[1]);
+                            }
+                            if (datasetData.values.length > 2) {
+                                console.log('Row 2 (second data):', datasetData.values[2]);
+                            }
+                        }
+                    } else {
+                        console.error('❌ Dataset response not OK:', datasetResponse.status);
                     }
                 } catch (error) {
-                    console.log('⚠️ Dataset sheet not accessible, using default assignments');
+                    console.error('❌ Error fetching dataset:', error);
                 }
 
                 // Process the data
@@ -561,72 +575,120 @@
             }
         }
 
-        // Process intern list data from Google Sheets with program assignments from column Q
+        // Enhanced debug version of processListData
         function processListData(listRows, datasetRows) {
             const processedInterns = [];
             
-            // Create a mapping of Civil ID to program assignment from Dataset sheet column Q
+            console.log('🔍 DEBUG: Processing data...');
+            console.log('List rows count:', listRows.length);
+            console.log('Dataset rows count:', datasetRows.length);
+            
+            // Create a mapping of Civil ID to program assignment
             const programAssignments = {};
+            
+            console.log('🔍 DEBUG: Analyzing dataset structure...');
             datasetRows.forEach((row, index) => {
-                if (row && row.length > 16) { // Column Q is index 16 (0-based)
-                    const civilId = String(row[2] || '').trim(); // Civil ID in column C (index 2)
-                    const programId = String(row[16] || '').trim(); // programID in column Q (index 16)
+                if (row && row.length > 0) {
+                    console.log(`Dataset row ${index}:`, row);
+                    console.log(`Row length: ${row.length}`);
+                    
+                    // Try different approaches to find Civil ID and Program ID
+                    let civilId = null;
+                    let programId = null;
+                    
+                    // Method 1: Try column C (index 2) for Civil ID
+                    if (row[2]) {
+                        civilId = String(row[2]).trim();
+                        console.log(`Found potential Civil ID in column C: ${civilId}`);
+                    }
+                    
+                    // Method 2: Try column Q (index 16) for Program ID
+                    if (row[16]) {
+                        programId = String(row[16]).trim();
+                        console.log(`Found potential Program ID in column Q: ${programId}`);
+                    }
+                    
+                    // Method 3: Try last column for Program ID
+                    if (row[row.length - 1]) {
+                        const lastCol = String(row[row.length - 1]).trim();
+                        console.log(`Last column value: ${lastCol}`);
+                        if (['MCH', 'ED', 'M&S'].includes(lastCol)) {
+                            programId = lastCol;
+                            console.log(`Found Program ID in last column: ${programId}`);
+                        }
+                    }
+                    
+                    // Search all columns for Civil ID (numeric) and Program ID (MCH/ED/M&S)
+                    row.forEach((cell, colIndex) => {
+                        const cellValue = String(cell || '').trim();
+                        
+                        // Look for Civil ID (8+ digit number)
+                        if (/^\d{8,}$/.test(cellValue) && !civilId) {
+                            civilId = cellValue;
+                            console.log(`Found Civil ID in column ${colIndex}: ${civilId}`);
+                        }
+                        
+                        // Look for Program ID
+                        if (['MCH', 'ED', 'M&S'].includes(cellValue) && !programId) {
+                            programId = cellValue;
+                            console.log(`Found Program ID in column ${colIndex}: ${programId}`);
+                        }
+                    });
                     
                     if (civilId && programId) {
                         programAssignments[civilId] = programId;
-                        console.log(`🔗 Mapped Civil ID ${civilId} → Program ${programId}`);
+                        console.log(`✅ Mapped: ${civilId} → ${programId}`);
+                    } else {
+                        console.log(`⚠️ Missing data - Civil ID: ${civilId}, Program ID: ${programId}`);
                     }
                 }
             });
 
-            console.log('📋 Program assignments found:', Object.keys(programAssignments).length);
-            console.log('📊 Assignments breakdown:', programAssignments);
+            console.log('📋 Final program assignments:', programAssignments);
+            console.log('📊 Total assignments found:', Object.keys(programAssignments).length);
             
+            // Process list data
             listRows.forEach((row, index) => {
-                // Skip empty rows or rows without Civil ID
                 if (!row || row.length < 3 || !row[2]) return;
                 
                 const civilId = String(row[2] || '').trim();
                 const assignedProgram = programAssignments[civilId];
                 
-                // Only process if we have a valid program assignment
-                if (!assignedProgram || !PROGRAM_MAPPINGS[assignedProgram]) {
-                    console.log(`⚠️ No valid program assignment for Civil ID: ${civilId}, assigned: ${assignedProgram}`);
-                    return; // Skip this intern if no valid program
-                }
+                console.log(`Processing intern: ${row[0]} (Civil ID: ${civilId}) → Program: ${assignedProgram}`);
                 
+                // Create intern record regardless of program assignment for debugging
                 const intern = {
-                    civilId: civilId, // Column C - Civil ID
-                    name: String(row[0] || '').trim(), // Column A - Name
-                    gender: String(row[1] || '').trim(), // Column B - Gender
-                    dateOfBirth: String(row[3] || '').trim(), // Column D - Date of Birth
-                    passportNumber: String(row[4] || '').trim(), // Column E - Passport
-                    nationality: String(row[5] || '').trim(), // Column F - Nationality
-                    qualification: String(row[6] || '').trim(), // Column G - Qualification
-                    phone: String(row[7] || '').trim(), // Column H - Phone
-                    address: String(row[8] || '').trim(), // Column I - Address
-                    email: String(row[9] || '').trim(), // Column J - Email
+                    civilId: civilId,
+                    name: String(row[0] || '').trim(),
+                    gender: String(row[1] || '').trim(),
+                    dateOfBirth: String(row[3] || '').trim(),
+                    passportNumber: String(row[4] || '').trim(),
+                    nationality: String(row[5] || '').trim(),
+                    qualification: String(row[6] || '').trim(),
+                    phone: String(row[7] || '').trim(),
+                    address: String(row[8] || '').trim(),
+                    email: String(row[9] || '').trim(),
                     
-                    // Program assignment from Dataset sheet column Q
-                    programId: assignedProgram,
-                    department: PROGRAM_MAPPINGS[assignedProgram].department,
-                    supervisor: PROGRAM_MAPPINGS[assignedProgram].supervisor,
+                    // Program assignment
+                    programId: assignedProgram || 'MCH', // Default to MCH for testing
+                    department: PROGRAM_MAPPINGS[assignedProgram || 'MCH']?.department || 'Maternal & Child Health',
+                    supervisor: PROGRAM_MAPPINGS[assignedProgram || 'MCH']?.supervisor || 'Ms. Nadiya',
                     
-                    // Fixed dates for all programs
+                    // Fixed dates
                     startDate: PROGRAM_DATES.startDate,
                     endDate: PROGRAM_DATES.endDate
                 };
                 
-                // Only add if civil ID exists and is numeric
+                // Add intern if Civil ID is valid
                 if (intern.civilId && /^\d+$/.test(intern.civilId)) {
                     processedInterns.push(intern);
-                    console.log(`✅ Added intern: ${intern.name} → ${intern.programId} (${intern.supervisor})`);
+                    console.log(`✅ Added: ${intern.name} → ${intern.programId} (${intern.supervisor})`);
                 }
             });
             
-            console.log(`📋 Processed ${processedInterns.length} interns from Google Sheets`);
+            console.log(`📋 Total processed interns: ${processedInterns.length}`);
             
-            // Log program distribution
+            // Show program distribution
             const programCounts = {};
             processedInterns.forEach(intern => {
                 programCounts[intern.programId] = (programCounts[intern.programId] || 0) + 1;
@@ -636,7 +698,7 @@
             return processedInterns;
         }
 
-        // Updated program data for MCH, ED, and M&S
+        // Program data
         function getProgramData() {
             return [
                 {
@@ -717,7 +779,7 @@
             ];
         }
 
-        // Fallback sample data with correct program assignments
+        // Fallback sample data
         function getSampleData() {
             return {
                 internsList: [
@@ -736,45 +798,13 @@
                         supervisor: "Ms. Nadiya",
                         startDate: "2025-09-21",
                         endDate: "2026-06-15"
-                    },
-                    {
-                        civilId: "15412461", 
-                        name: "Aisha Salim Nasser Alharrassi",
-                        gender: "Female",
-                        dateOfBirth: "24/01/2000",
-                        nationality: "Omani",
-                        qualification: "BSN",
-                        phone: "94418646",
-                        address: "Firq/Nizwa",
-                        email: "aysn.alh@gmail.com",
-                        department: "Emergency Department",
-                        programId: "ED",
-                        supervisor: "Mr. Al-Hassan",
-                        startDate: "2025-09-21",
-                        endDate: "2026-06-15"
-                    },
-                    {
-                        civilId: "19444507",
-                        name: "Al Thuraiya Khalfan Saed AlAbri", 
-                        gender: "Female",
-                        dateOfBirth: "03/05/2001",
-                        nationality: "Omani",
-                        qualification: "BSN",
-                        phone: "92652973",
-                        address: "Al Hamra",
-                        email: "alabrialthuraya495@gmail.com",
-                        department: "Medical & Surgical",
-                        programId: "M&S",
-                        supervisor: "Ms. Noora & Ms. Azhar",
-                        startDate: "2025-09-21",
-                        endDate: "2026-06-15"
                     }
                 ],
                 programs: getProgramData()
             };
         }
 
-        // Updated search function to use Google Sheets data
+        // Search function (same as before)
         async function searchIntern() {
             const civilId = document.getElementById('civilIdInput').value.trim();
             const resultsSection = document.getElementById('resultsSection');
@@ -798,9 +828,7 @@
             resultsSection.innerHTML = '';
 
             try {
-                // Fetch live data from Google Sheets
                 const data = await fetchFromGoogleSheets();
-                
                 const intern = data.internsList.find(i => i.civilId === civilId);
                 
                 if (!intern) {
@@ -815,7 +843,6 @@
                 console.error('Search error:', error);
                 showError('❌ An error occurred while searching. Please try again.');
             } finally {
-                // Hide loading
                 loadingSection.style.display = 'none';
                 searchBtn.disabled = false;
                 searchBtn.textContent = '🔍 Access My Profile';
@@ -984,9 +1011,8 @@
             document.getElementById('civilIdInput').focus();
         });
 
-        // Console logging for debugging
-        console.log('🧪 NNIP 2025 - Debug Mode Active');
-        console.log('📋 Reading programID from Dataset column Q (index 16)');
-        console.log('🔍 Valid programs: MCH, ED, M&S');
-        console.log('📅 All programs: Sep 21, 2025 - Jun 15, 2026 (9 months)');
+        // Debug logging
+        console.log('🧪 DEBUG MODE - NNIP 2025');
+        console.log('📋 This version will show detailed debugging information');
+        console.log('🔍 Check console for dataset structure analysis');
     </script>
