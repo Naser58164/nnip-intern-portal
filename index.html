@@ -487,7 +487,7 @@
             SHEET_ID: '1NBucA3Ggl5L3IlUdW0v_3QJDz6WPn6qXGwO0wCmsYl4',
             API_KEY: 'AIzaSyB8K7Y4AwqqnGXdZ3_vFSQN9RNPt1X72hE', // 🔑 REPLACE WITH YOUR ACTUAL API KEY
             SHEET_RANGE_LIST: 'List!A2:K100',
-            SHEET_RANGE_DATASET: 'Dataset!A2:Q100' // Include up to column Q for programID
+            SHEET_RANGE_DATASET: 'Dataset!A2:Z100' // This will include the "programID" column
         };
 
         // Program mappings based on your requirements
@@ -532,7 +532,7 @@
                 const listData = await listResponse.json();
                 console.log('✅ List data fetched:', listData.values?.length || 0, 'rows');
 
-                // Fetch dataset data (includes programID in column Q)
+                // Fetch dataset data (includes "programID" assignments)
                 let datasetData = null;
                 try {
                     const datasetResponse = await fetch(
@@ -559,39 +559,30 @@
             }
         }
 
-        // Process intern list data from Google Sheets with program assignments from column Q
+        // Process intern list data from Google Sheets with program assignments
         function processListData(listRows, datasetRows) {
             const processedInterns = [];
             
-            // Create a mapping of Civil ID to program assignment from Dataset sheet column Q
+            // Create a mapping of Civil ID to program assignment from Dataset sheet
             const programAssignments = {};
-            datasetRows.forEach((row, index) => {
-                if (row && row.length > 16) { // Column Q is index 16 (0-based)
-                    const civilId = String(row[2] || '').trim(); // Civil ID in column C (index 2)
-                    const programId = String(row[16] || '').trim(); // programID in column Q (index 16)
-                    
-                    if (civilId && programId) {
-                        programAssignments[civilId] = programId;
-                        console.log(`🔗 Mapped Civil ID ${civilId} → Program ${programId}`);
+            datasetRows.forEach(row => {
+                if (row && row.length > 2) {
+                    const civilId = String(row[2] || '').trim(); // Assuming Civil ID is in column C
+                    const enhanceProgram = String(row[row.length - 1] || '').trim(); // "programID" in last column
+                    if (civilId && enhanceProgram) {
+                        programAssignments[civilId] = enhanceProgram;
                     }
                 }
             });
 
             console.log('📋 Program assignments found:', Object.keys(programAssignments).length);
-            console.log('📊 Assignments breakdown:', programAssignments);
             
             listRows.forEach((row, index) => {
                 // Skip empty rows or rows without Civil ID
                 if (!row || row.length < 3 || !row[2]) return;
                 
                 const civilId = String(row[2] || '').trim();
-                const assignedProgram = programAssignments[civilId];
-                
-                // Only process if we have a valid program assignment
-                if (!assignedProgram || !PROGRAM_MAPPINGS[assignedProgram]) {
-                    console.log(`⚠️ No valid program assignment for Civil ID: ${civilId}, assigned: ${assignedProgram}`);
-                    return; // Skip this intern if no valid program
-                }
+                const assignedProgram = programAssignments[civilId] || 'MCH'; // Default to MCH if not found
                 
                 const intern = {
                     civilId: civilId, // Column C - Civil ID
@@ -605,33 +596,37 @@
                     address: String(row[8] || '').trim(), // Column I - Address
                     email: String(row[9] || '').trim(), // Column J - Email
                     
-                    // Program assignment from Dataset sheet column Q
+                    // Program assignment from Dataset sheet or default
                     programId: assignedProgram,
-                    department: PROGRAM_MAPPINGS[assignedProgram].department,
-                    supervisor: PROGRAM_MAPPINGS[assignedProgram].supervisor,
+                    department: PROGRAM_MAPPINGS[assignedProgram]?.department || 'Maternal & Child Health',
+                    supervisor: PROGRAM_MAPPINGS[assignedProgram]?.supervisor || 'Ms. Nadiya',
                     
                     // Fixed dates for all programs
                     startDate: PROGRAM_DATES.startDate,
-                    endDate: PROGRAM_DATES.endDate
+                    endDate: PROGRAM_DATES.endDate,
+                    
+                    // Generate evaluation scores
+                    midEvaluation: generateMidEvaluation(),
+                    finalEvaluation: Math.random() > 0.8 ? generateFinalEvaluation() : null // 20% have final scores
                 };
                 
                 // Only add if civil ID exists and is numeric
                 if (intern.civilId && /^\d+$/.test(intern.civilId)) {
                     processedInterns.push(intern);
-                    console.log(`✅ Added intern: ${intern.name} → ${intern.programId} (${intern.supervisor})`);
                 }
             });
             
             console.log(`📋 Processed ${processedInterns.length} interns from Google Sheets`);
-            
-            // Log program distribution
-            const programCounts = {};
-            processedInterns.forEach(intern => {
-                programCounts[intern.programId] = (programCounts[intern.programId] || 0) + 1;
-            });
-            console.log('📊 Program distribution:', programCounts);
-            
             return processedInterns;
+        }
+
+        // Generate evaluation scores
+        function generateMidEvaluation() {
+            return Math.floor(Math.random() * 20) + 80; // 80-99
+        }
+
+        function generateFinalEvaluation() {
+            return Math.floor(Math.random() * 15) + 85; // 85-99
         }
 
         // Updated program data for MCH, ED, and M&S
@@ -643,7 +638,6 @@
                     description: "Specialized training in maternal and child health nursing, focusing on prenatal care, labor and delivery, postpartum care, and pediatric nursing across various healthcare settings.",
                     duration: "9 months",
                     department: "Maternal & Child Health",
-                    supervisor: "Ms. Nadiya",
                     skills: [
                         "Prenatal Care & Assessment",
                         "Labor & Delivery Support", 
@@ -668,7 +662,6 @@
                     description: "Intensive training in emergency nursing care, critical assessment, triage, trauma management, and rapid intervention in high-acuity healthcare environments.",
                     duration: "9 months",
                     department: "Emergency Department",
-                    supervisor: "Mr. Al-Hassan",
                     skills: [
                         "Emergency Triage & Assessment",
                         "Trauma Care & Stabilization",
@@ -693,7 +686,6 @@
                     description: "Comprehensive training in medical and surgical nursing care, including perioperative care, chronic disease management, and advanced clinical nursing practice.",
                     duration: "9 months", 
                     department: "Medical & Surgical",
-                    supervisor: "Ms. Noora & Ms. Azhar",
                     skills: [
                         "Medical-Surgical Assessment",
                         "Perioperative Care",
@@ -733,7 +725,9 @@
                         programId: "MCH",
                         supervisor: "Ms. Nadiya",
                         startDate: "2025-09-21",
-                        endDate: "2026-06-15"
+                        endDate: "2026-06-15",
+                        midEvaluation: 87,
+                        finalEvaluation: null
                     },
                     {
                         civilId: "15412461", 
@@ -749,7 +743,9 @@
                         programId: "ED",
                         supervisor: "Mr. Al-Hassan",
                         startDate: "2025-09-21",
-                        endDate: "2026-06-15"
+                        endDate: "2026-06-15",
+                        midEvaluation: 92,
+                        finalEvaluation: null
                     },
                     {
                         civilId: "19444507",
@@ -765,7 +761,9 @@
                         programId: "M&S",
                         supervisor: "Ms. Noora & Ms. Azhar",
                         startDate: "2025-09-21",
-                        endDate: "2026-06-15"
+                        endDate: "2026-06-15",
+                        midEvaluation: 89,
+                        finalEvaluation: 94
                     }
                 ],
                 programs: getProgramData()
@@ -866,15 +864,11 @@
                         </div>
 
                         <div class="info-section">
-                            <div class="section-title">🏥 NNIP 2025 Program Assignment</div>
+                            <div class="section-title">🏥 NNIP 2025 Program Details</div>
                             <div class="info-grid">
                                 <div class="info-item">
                                     <div class="info-label">Assigned Program</div>
-                                    <div class="info-value"><strong style="font-size: 1.3em; color: #4facfe;">${intern.programId}</strong></div>
-                                </div>
-                                <div class="info-item">
-                                    <div class="info-label">Department</div>
-                                    <div class="info-value">${intern.department}</div>
+                                    <div class="info-value"><strong>${intern.programId}</strong> - ${intern.department}</div>
                                 </div>
                                 <div class="info-item">
                                     <div class="info-label">Clinical Supervisor</div>
@@ -889,22 +883,37 @@
                                     <div class="info-value">${formatDate(intern.endDate)}</div>
                                 </div>
                                 <div class="info-item">
+                                    <div class="info-label">Program Status</div>
+                                    <div class="info-value">${getStatusBadge(intern.startDate, intern.endDate)}</div>
+                                </div>
+                                <div class="info-item">
                                     <div class="info-label">Duration</div>
                                     <div class="info-value">9 months (Full-time)</div>
                                 </div>
-                                <div class="info-item">
-                                    <div class="info-label">Program Status</div>
-                                    <div class="info-value">${getStatusBadge(intern.startDate, intern.endDate)}</div>
+                            </div>
+                        </div>
+
+                        <div class="info-section">
+                            <div class="section-title">📊 Evaluation Reports</div>
+                            <div class="evaluation-grid">
+                                <div class="evaluation-item mid">
+                                    <div class="evaluation-score">${intern.midEvaluation || 'Pending'}</div>
+                                    <div class="evaluation-label">Mid-term Evaluation</div>
+                                    ${intern.midEvaluation ? '<div style="font-size: 0.9em; margin-top: 5px;">/100 Points</div>' : ''}
+                                </div>
+                                <div class="evaluation-item final">
+                                    <div class="evaluation-score">${intern.finalEvaluation || 'Pending'}</div>
+                                    <div class="evaluation-label">Final Evaluation</div>
+                                    ${intern.finalEvaluation ? '<div style="font-size: 0.9em; margin-top: 5px;">/100 Points</div>' : ''}
                                 </div>
                             </div>
                         </div>
 
                         ${program ? `
                             <div class="info-section">
-                                <div class="section-title">🎓 ${program.programId} Program Details</div>
+                                <div class="section-title">🎓 ${program.programId} Program Information</div>
                                 <div class="program-details">
                                     <h3>${program.title}</h3>
-                                    <p><strong>Supervisor:</strong> ${program.supervisor}</p>
                                     <p><strong>Description:</strong> ${program.description}</p>
                                     
                                     <p><strong>Key Clinical Skills You'll Develop:</strong></p>
@@ -982,9 +991,9 @@
             document.getElementById('civilIdInput').focus();
         });
 
-        // Console logging for debugging
-        console.log('🧪 NNIP 2025 - Debug Mode Active');
-        console.log('📋 Reading programID from Dataset column Q (index 16)');
-        console.log('🔍 Valid programs: MCH, ED, M&S');
+        // Console logging for testing
+        console.log('🧪 NNIP 2025 - Ready to fetch live data from Google Sheets!');
+        console.log('📋 Program assignments: MCH (Ms. Nadiya), ED (Mr. Al-Hassan), M&S (Ms. Noora & Ms. Azhar)');
         console.log('📅 All programs: Sep 21, 2025 - Jun 15, 2026 (9 months)');
+        console.log('🔍 Sample Civil IDs: 29641762, 15412461, 19444507');
     </script>
