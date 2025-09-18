@@ -477,7 +477,7 @@
    
 
     <div class="footer">
-        <p>© 2025 National Enhancement Progran | Nizwa Hospital </p>
+        <p>© 2025 National Enhancement Program | Nizwa Hospital </p>
     </div>
 
 <script>
@@ -486,7 +486,7 @@
             SHEET_ID: '1NBucA3Ggl5L3IlUdW0v_3QJDz6WPn6qXGwO0wCmsYl4',
             API_KEY: 'AIzaSyB8K7Y4AwqqnGXdZ3_vFSQN9RNPt1X72hE', // 🔑 REPLACE WITH YOUR ACTUAL API KEY
             SHEET_RANGE_LIST: 'List!A2:K100',
-            SHEET_RANGE_DATASET: 'Dataset!A2:Z100' // This will include the "Enhance Program" column
+            SHEET_RANGE_DATASET: 'Dataset!A2:Z100' // This will include the "programId" column
         };
 
         // Program mappings based on your requirements
@@ -531,7 +531,7 @@
                 const listData = await listResponse.json();
                 console.log('✅ List data fetched:', listData.values?.length || 0, 'rows');
 
-                // Fetch dataset data (includes "Enhance Program" assignments)
+                // Fetch dataset data (includes "programId" assignments)
                 let datasetData = null;
                 try {
                     const datasetResponse = await fetch(
@@ -567,7 +567,7 @@
             datasetRows.forEach(row => {
                 if (row && row.length > 2) {
                     const civilId = String(row[2] || '').trim(); // Assuming Civil ID is in column C
-                    const enhanceProgram = String(row[row.length - 1] || '').trim(); // "Enhance Program" in last column
+                    const enhanceProgram = String(row[row.length - 1] || '').trim(); // "programId" in column "Q"
                     if (civilId && enhanceProgram) {
                         programAssignments[civilId] = enhanceProgram;
                     }
