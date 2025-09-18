@@ -438,14 +438,14 @@
                 <div class="header-content">
                     <h2>Nizwa Hospital</h2>
                     <h1>🎓 Enhancement Program 🎓</h1>
-                    <div class="subtitle">Selection of National Enhacement Program</div>
+                    <div class="subtitle">Selection of National Enhancement Program</div>
                     <div class="year-badge">2025</div>
                 </div>
             </div>
 
             <div class="search-section">
                 <div class="search-instructions">
-                    Enter your Civil ID number to access your program details and evaluations
+                    Enter your Civil ID number to access your program details
                 </div>
                 <div class="search-box">
                     <input 
@@ -490,17 +490,17 @@
         const PROGRAM_MAPPINGS = {
             'MCH': {
                 programId: 'MCH',
-                supervisor: 'Ms. Nadiya',
+                Program Coordinator: 'Ms. Nadiya',
                 department: 'Maternal & Child Health'
             },
             'ED': {
                 programId: 'ED', 
-                supervisor: 'Mr. Al-Hassan',
+                Program Coordinator: 'Mr. Al-Hassan',
                 department: 'Emergency Department'
             },
             'M&S': {
                 programId: 'M&S',
-                supervisor: 'Ms. Noora & Ms. Azhar',
+                Program Coordinator: 'Ms. Noora & Ms. Azhar',
                 department: 'Medical & Surgical'
             }
         };
@@ -597,7 +597,7 @@
                     // Program assignment from last column
                     programId: programId,
                     department: PROGRAM_MAPPINGS[programId].department,
-                    supervisor: PROGRAM_MAPPINGS[programId].supervisor,
+                    Program Coordinator: PROGRAM_MAPPINGS[programId].Program Coordinator,
                     
                     // Fixed dates for all programs
                     startDate: PROGRAM_DATES.startDate,
@@ -605,7 +605,7 @@
                 };
                 
                 processedInterns.push(intern);
-                console.log(`✅ Added: ${intern.name} → ${intern.programId} (${intern.supervisor})`);
+                console.log(`✅ Added: ${intern.name} → ${intern.programId} (${intern.Program Coordinator})`);
             });
             
             console.log(`📋 Total processed interns: ${processedInterns.length}`);
@@ -629,7 +629,7 @@
                     description: "Specialized training in maternal and child health nursing, focusing on prenatal care, labor and delivery, postpartum care, and pediatric nursing across various healthcare settings.",
                     duration: "9 months",
                     department: "Maternal & Child Health",
-                    supervisor: "Ms. Nadiya",
+                    Program Coordinator: "Ms. Nadiya",
                     skills: [
                         "Prenatal Care & Assessment",
                         "Labor & Delivery Support", 
@@ -654,7 +654,7 @@
                     description: "Intensive training in emergency nursing care, critical assessment, triage, trauma management, and rapid intervention in high-acuity healthcare environments.",
                     duration: "9 months",
                     department: "Emergency Department",
-                    supervisor: "Mr. Al-Hassan",
+                    Program Coordinator: "Mr. Al-Hassan",
                     skills: [
                         "Emergency Triage & Assessment",
                         "Trauma Care & Stabilization",
@@ -679,7 +679,7 @@
                     description: "Comprehensive training in medical and surgical nursing care, including perioperative care, chronic disease management, and advanced clinical nursing practice.",
                     duration: "9 months", 
                     department: "Medical & Surgical",
-                    supervisor: "Ms. Noora & Ms. Azhar",
+                    Program Coordinator: "Ms. Noora & Ms. Azhar",
                     skills: [
                         "Medical-Surgical Assessment",
                         "Perioperative Care",
@@ -717,7 +717,7 @@
                         email: "ahoodaljunaibi8@gmail.com",
                         department: "Maternal & Child Health",
                         programId: "MCH",
-                        supervisor: "Ms. Nadiya",
+                        Program Coordinator: "Ms. Nadiya",
                         startDate: "2025-09-21",
                         endDate: "2026-06-15"
                     },
@@ -733,7 +733,7 @@
                         email: "aysn.alh@gmail.com",
                         department: "Emergency Department",
                         programId: "ED",
-                        supervisor: "Mr. Al-Hassan",
+                        Program Coordinator: "Mr. Al-Hassan",
                         startDate: "2025-09-21",
                         endDate: "2026-06-15"
                     },
@@ -749,7 +749,7 @@
                         email: "alabrialthuraya495@gmail.com",
                         department: "Medical & Surgical",
                         programId: "M&S",
-                        supervisor: "Ms. Noora & Ms. Azhar",
+                        Program Coordinator: "Ms. Noora & Ms. Azhar",
                         startDate: "2025-09-21",
                         endDate: "2026-06-15"
                     }
@@ -869,7 +869,7 @@
                                 </div>
                                 <div class="info-item">
                                     <div class="info-label">Program Coordinator</div>
-                                    <div class="info-value">${intern.supervisor}</div>
+                                    <div class="info-value">${intern.Program Coordinator}</div>
                                 </div>
                                 <div class="info-item">
                                     <div class="info-label">Program Start Date</div>
@@ -881,7 +881,7 @@
                                 </div>
                                 <div class="info-item">
                                     <div class="info-label">Duration</div>
-                                    <div class="info-value">9 months (Full-time)</div>
+                                    <div class="info-value">9 months</div>
                                 </div>
                                 <div class="info-item">
                                     <div class="info-label">Program Status</div>
@@ -895,7 +895,7 @@
                                 <div class="section-title">🎓 ${program.programId} Program Details</div>
                                 <div class="program-details">
                                     <h3>${program.title}</h3>
-                                    <p><strong>Supervisor:</strong> ${program.supervisor}</p>
+                                    <p><strong>Program Coordinator:</strong> ${program.Program Coordinator}</p>
                                     <p><strong>Description:</strong> ${program.description}</p>
                                     
                                     <p><strong>Key Clinical Skills You'll Develop:</strong></p>
